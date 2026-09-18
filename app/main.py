@@ -21,6 +21,9 @@ def db():
  c.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,conversation_id INTEGER,role TEXT,content TEXT,created_at TEXT)")
  c.execute("CREATE TABLE IF NOT EXISTS memories(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,fact TEXT,created_at TEXT)")
  c.execute("CREATE TABLE IF NOT EXISTS documents(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,filename TEXT,content TEXT,created_at TEXT)")
+ for table,col in [("messages","conversation_id"),("memories","user_id"),("documents","user_id")]:
+  cols=[r["name"] for r in c.execute("PRAGMA table_info("+table+")").fetchall()]
+  if col not in cols:c.execute("ALTER TABLE "+table+" ADD COLUMN "+col+" INTEGER")
  c.commit()
  return c
 
