@@ -1,70 +1,36 @@
-# My AI v12
+# Ife AI v13
 
-A personal AI assistant built with FastAPI for Android/Termux.
+Personal AI assistant built with FastAPI.
 
-## v11 features
-- Account registration and login
-- Private sessions using secure HTTP-only cookies
-- Multiple conversations/chats
-- Automatic chat titles
-- Long-term memory per account
-- PDF/TXT/MD/CSV document upload and reading
-- Optional web search through the OpenAI Responses API
+## What's new in v13
+- PostgreSQL-ready cloud database with SQLAlchemy
+- SQLite fallback for local Android/Termux use
+- User accounts, sessions, chats, memories and documents
+- OpenAI Responses API
+- Web search toggle
 - Image understanding
-- Voice input and text-to-speech
-- Mobile/PWA interface
-- Chat export
-- Production deployment configuration for Render and Docker
+- PDF/TXT/MD/CSV uploads
+- Render Blueprint with managed Postgres
+- Secure session cookie option for HTTPS
+- Health endpoint: /api/health
 
-## Android / Termux
-
+## Run on Android/Termux
 ```bash
 pkg update
 pkg install python
-python -m pip install -r requirements.txt
-cp .env.example .env
-nano .env
+pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
+Open http://127.0.0.1:8000.
 
-Then open `http://127.0.0.1:8000` on your phone.
+For real AI, set OPENAI_API_KEY in your environment or .env. Never commit your key.
 
-## Environment
+## Render
+The included render.yaml creates the web service and a managed Postgres database. Render can wire the database connection into DATABASE_URL. Render documents that Blueprint database resources can expose a connectionString to a service, and that secrets should use sync: false rather than being hard-coded. 
 
-```
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-5.6-luna
-ASSISTANT_NAME=My AI
-AI_SYSTEM_PROMPT=You are My AI, a helpful personal assistant. Be clear and friendly.
-```
+After deploying, add your private OPENAI_API_KEY in the Render service Environment settings. Do not put the key in GitHub.
 
-Keep the API key only in `.env`. Never put it in frontend JavaScript or commit it to GitHub.
+For a Render service and database in the same region, use the internal database connection supplied by the Blueprint.
 
-## Main API
-- POST `/api/auth/register`
-- POST `/api/auth/login`
-- POST `/api/auth/logout`
-- GET `/api/auth/me`
-- GET/POST/DELETE `/api/conversations`
-- GET `/api/history`
-- POST `/chat`
-- GET/POST/DELETE `/api/memory`
-- GET/POST/DELETE `/api/documents`
-- POST `/api/image`
-- GET `/api/export`
-- GET `/api/status`
-- GET `/api/health`
-
-The default model is GPT-5.6 Luna. OpenAI's current model documentation lists GPT-5.6 Luna as supporting text/image input and the Responses API, with web search and file search available among the supported tools. 
-
-## Put My AI online
-
-The repository now includes `render.yaml` and a `Dockerfile`. Render can deploy a FastAPI Web Service from this GitHub repository. Use:
-
-- Build: `pip install -r requirements.txt`
-- Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- Health check: `/api/health`
-
-In Render, add `OPENAI_API_KEY` as a secret environment variable. Do not commit the key to GitHub. Render supports Git-connected web services and automatic redeploys when the selected branch changes.
-
-For production, use persistent storage or a managed database for user accounts, chats, memories and documents; the current SQLite database is suitable for a simple single-instance deployment but should not be treated as durable cloud storage on an ephemeral filesystem.
+## Important
+Existing v12 SQLite data is not automatically migrated into the new cloud Postgres database. Keep the old chat.db as a backup before switching databases.
