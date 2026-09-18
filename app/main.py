@@ -10,7 +10,7 @@ ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); DB=os.path.joi
 API_KEY=os.getenv("OPENAI_API_KEY",""); MODEL=os.getenv("OPENAI_MODEL","gpt-5.6-luna")
 SYSTEM_PROMPT=os.getenv("AI_SYSTEM_PROMPT","You are My AI, a helpful personal assistant. Be clear and friendly.")
 ASSISTANT_NAME=os.getenv("ASSISTANT_NAME","My AI")
-app=FastAPI(title="My AI API",version="11.0")
+app=FastAPI(title="My AI API",version="12.0")
 app.mount("/static",StaticFiles(directory=os.path.join(ROOT,"static")),name="static")
 
 def db():
@@ -48,7 +48,7 @@ def require_user(request):
 def new_session(response,user_id):
  token=secrets.token_urlsafe(32); c=db()
  c.execute("INSERT INTO sessions(user_id,token_hash,created_at) VALUES(?,?,?)",(user_id,hashlib.sha256(token.encode()).hexdigest(),datetime.utcnow().isoformat()));c.commit();c.close()
- response.set_cookie("my_ai_session",token,httponly=True,samesite="lax",max_age=60*60*24*30)
+ response.set_cookie("my_ai_session",token,httponly=True,samesite="lax",secure=os.getenv("COOKIE_SECURE","0")=="1",max_age=60*60*24*30)
 class AuthRequest(BaseModel): username:str; password:str
 class ChatRequest(BaseModel): message:str; conversation_id:int|None=None; use_memory:bool=True; web_search:bool=False
 class MemoryRequest(BaseModel): fact:str
@@ -68,9 +68,9 @@ def demo_answer(m): return f"Demo mode received: {m}\n\nAdd OPENAI_API_KEY to .e
 @app.get("/")
 async def home(): return FileResponse(os.path.join(ROOT,"static","index.html"))
 @app.get("/api/health")
-async def health(): return {"ok":True,"version":"11.0"}
+async def health(): return {"ok":True,"version":"12.0"}
 @app.get("/api/status")
-async def status(): return {"configured":bool(API_KEY),"model":MODEL if API_KEY else "demo","provider":"OpenAI Responses API" if API_KEY else "Demo","version":"11.0"}
+async def status(): return {"configured":bool(API_KEY),"model":MODEL if API_KEY else "demo","provider":"OpenAI Responses API" if API_KEY else "Demo","version":"12.0"}
 
 @app.post("/api/auth/register")
 async def register(req:AuthRequest,response:Response):
