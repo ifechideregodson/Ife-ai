@@ -1,4 +1,4 @@
-# My AI v11
+# My AI v12
 
 A personal AI assistant built with FastAPI for Android/Termux.
 
@@ -14,6 +14,7 @@ A personal AI assistant built with FastAPI for Android/Termux.
 - Voice input and text-to-speech
 - Mobile/PWA interface
 - Chat export
+- Production deployment configuration for Render and Docker
 
 ## Android / Termux
 
@@ -55,3 +56,15 @@ Keep the API key only in `.env`. Never put it in frontend JavaScript or commit i
 - GET `/api/health`
 
 The default model is GPT-5.6 Luna. OpenAI's current model documentation lists GPT-5.6 Luna as supporting text/image input and the Responses API, with web search and file search available among the supported tools. 
+
+## Put My AI online
+
+The repository now includes `render.yaml` and a `Dockerfile`. Render can deploy a FastAPI Web Service from this GitHub repository. Use:
+
+- Build: `pip install -r requirements.txt`
+- Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Health check: `/api/health`
+
+In Render, add `OPENAI_API_KEY` as a secret environment variable. Do not commit the key to GitHub. Render supports Git-connected web services and automatic redeploys when the selected branch changes.
+
+For production, use persistent storage or a managed database for user accounts, chats, memories and documents; the current SQLite database is suitable for a simple single-instance deployment but should not be treated as durable cloud storage on an ephemeral filesystem.
