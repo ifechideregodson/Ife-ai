@@ -2,6 +2,11 @@
 
 Personal AI assistant built with FastAPI.
 
+## What's new in v14
+- Basic per-IP request rate limiting for chat, image and document endpoints
+- Stronger username and password validation
+- API key remains server-side and is never returned by the API
+
 ## What's new in v13
 - PostgreSQL-ready cloud database with SQLAlchemy
 - SQLite fallback for local Android/Termux use
