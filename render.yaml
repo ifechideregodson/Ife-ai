@@ -20,6 +20,8 @@ services:
         value: My AI
       - key: COOKIE_SECURE
         value: "1"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "30"
       - key: AI_SYSTEM_PROMPT
         value: You are My AI, a helpful personal assistant. Be clear and friendly.
 
