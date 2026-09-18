@@ -19,7 +19,20 @@ _rate_cache={}
 app=FastAPI(title="My AI API",version="14.0")
 app.mount("/static",StaticFiles(directory=os.path.join(ROOT,"static")),name="static")
 
-def now(): return datetime.utcnow()\ndef rate_limit(request):\n    ip=request.client.host if request.client else "unknown"; key=(ip,int(time.time()//60)); count=_rate_cache.get(key,0)+1; _rate_cache[key]=count\n    if count>RATE_LIMIT: return JSONResponse({"error":"Too many requests. Please wait a minute."},status_code=429)\n    if len(_rate_cache)>5000:\n        cutoff=int(time.time()//60)-2\n        for k in list(_rate_cache):\n            if k[1]<cutoff: _rate_cache.pop(k,None)\n    return None
+def now(): return datetime.utcnow()
+def rate_limit(request):
+    ip=request.client.host if request.client else "unknown"
+    key=(ip,int(time.time()//60))
+    count=_rate_cache.get(key,0)+1
+    _rate_cache[key]=count
+    if count>RATE_LIMIT:
+        return JSONResponse({"error":"Too many requests. Please wait a minute."},status_code=429)
+    if len(_rate_cache)>5000:
+        cutoff=int(time.time()//60)-2
+        for k in list(_rate_cache):
+            if k[1]<cutoff:
+                _rate_cache.pop(k,None)
+    return None
 def pwd_hash(password):
     salt=secrets.token_bytes(16); digest=hashlib.pbkdf2_hmac("sha256",password.encode(),salt,200000)
     return salt.hex()+":"+digest.hex()
@@ -63,14 +76,14 @@ def demo_answer(m): return f"Demo mode received: {m}\n\nAdd OPENAI_API_KEY to en
 @app.get("/")
 async def home(): return FileResponse(os.path.join(ROOT,"static","index.html"))
 @app.get("/api/health")
-async def health(): return {"ok":True,"version":"13.0","database":"postgres" if os.getenv("DATABASE_URL") else "sqlite"}
+async def health(): return {"ok":True,"version":"14.0","database":"postgres" if os.getenv("DATABASE_URL") else "sqlite"}
 @app.get("/api/status")
 async def status(): return {"configured":bool(API_KEY),"model":MODEL if API_KEY else "demo","provider":"OpenAI Responses API" if API_KEY else "Demo","database":"postgres" if os.getenv("DATABASE_URL") else "sqlite","version":"14.0","rate_limit_per_minute":RATE_LIMIT}
 
 @app.post("/api/auth/register")
 async def register(req:AuthRequest,response:Response):
     username=req.username.strip()
-    if len(username)<3 or len(username)>30 or len(req.password)<6:return JSONResponse({"error":"Username must be 3-30 letters/numbers/._- characters and password at least 8 characters."},status_code=400)
+    if len(username)<3 or len(username)>30 or len(req.password)<8:return JSONResponse({"error":"Username must be 3-30 letters/numbers/._- characters and password at least 8 characters."},status_code=400)
     with SessionLocal() as db:
         if db.scalar(select(User).where(User.username==username)): return JSONResponse({"error":"Username already exists."},status_code=409)
         u=User(username=username,password_hash=pwd_hash(req.password),created_at=now());db.add(u);db.flush()
