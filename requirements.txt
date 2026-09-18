@@ -4,3 +4,5 @@ openai
 python-dotenv
 python-multipart
 pypdf
+sqlalchemy>=2.0
+psycopg[binary]>=3.2
